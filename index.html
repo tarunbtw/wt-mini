@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Canvas — Infinite Drawing</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+  <!-- Canvas -->
+  <div id="canvas-container" class="cursor-pen">
+    <canvas id="main-canvas"></canvas>
+    <div id="selection-box"></div>
+    <textarea id="text-input" rows="1" placeholder="Type here..."></textarea>
+  </div>
+
+  <!-- Top toolbar -->
+  <div id="topbar">
+    <!-- Select -->
+    <button class="tool-btn" data-tool="select" title="">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M2 2l5 12 2-5 5-2z" />
+      </svg>
+      <span class="tip">Select V</span>
+    </button>
+
+    <!-- Hand/Pan -->
+    <button class="tool-btn" data-tool="hand">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M8 2v6M5.5 4.5V8M3.5 6.5V9.5a4.5 4.5 0 009 0V7M10.5 5V8M13 7v2" />
+      </svg>
+      <span class="tip">Pan H</span>
+    </button>
+
+    <div class="divider"></div>
+
+    <!-- Pen -->
+    <button class="tool-btn active" data-tool="pen">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M11.5 2.5l2 2-8 8-2.5.5.5-2.5 8-8z" />
+        <path d="M10 4l2 2" />
+      </svg>
+      <span class="tip">Pen P</span>
+    </button>
+
+    <!-- Highlighter -->
+    <button class="tool-btn" data-tool="highlighter">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M10 2l4 4-7 7H3v-4l7-7z" />
+        <path d="M7 5l4 4" />
+      </svg>
+      <span class="tip">Highlight M</span>
+    </button>
+
+    <!-- Eraser -->
+    <button class="tool-btn" data-tool="eraser">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M11 3l2 2-6 8H3l-1-1 9-9z" />
+        <path d="M3 13h10" />
+      </svg>
+      <span class="tip">Eraser E</span>
+    </button>
+
+    <div class="divider"></div>
+
+    <!-- Text -->
+    <button class="tool-btn" data-tool="text">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <path d="M3 4h10M8 4v9" />
+      </svg>
+      <span class="tip">Text T</span>
+    </button>
+
+    <!-- Shapes -->
+    <button class="tool-btn" data-tool="rect">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <rect x="2" y="4" width="12" height="8" rx="1.5" />
+      </svg>
+      <span class="tip">Rectangle R</span>
+    </button>
+
+    <button class="tool-btn" data-tool="ellipse">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <ellipse cx="8" cy="8" rx="6" ry="4.5" />
+      </svg>
+      <span class="tip">Ellipse O</span>
+    </button>
+
+    <button class="tool-btn" data-tool="line">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <line x1="2" y1="13" x2="14" y2="3" />
+      </svg>
+      <span class="tip">Line L</span>
+    </button>
+
+    <button class="tool-btn" data-tool="arrow">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+        stroke-linejoin="round">
+        <line x1="2" y1="13" x2="13" y2="3" />
+        <path d="M8 3h5v5" />
+      </svg>
+      <span class="tip">Arrow A</span>
+    </button>
+
+    <div class="divider"></div>
+
+    <!-- Undo / Redo -->
+    <button class="tool-btn" id="undo-btn">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M3 7A5 5 0 1113 9H3" />
+        <path d="M3 4v3h3" />
+      </svg>
+      <span class="tip">Undo ⌘Z</span>
+    </button>
+
+    <button class="tool-btn" id="redo-btn">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M13 7A5 5 0 1 0 3 9h10" />
+        <path d="M13 4v3h-3" />
+      </svg>
+      <span class="tip">Redo ⌘⇧Z</span>
+    </button>
+
+    <!-- Clear -->
+    <button class="tool-btn" id="clear-btn">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M3 3l10 10M13 3L3 13" />
+      </svg>
+      <span class="tip">Clear canvas</span>
+    </button>
+
+    <div class="divider"></div>
+
+    <!-- Shortcuts toggle -->
+    <button class="tool-btn" id="help-btn">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <circle cx="8" cy="8" r="6" />
+        <path d="M6.5 6.5a1.5 1.5 0 013 .5c0 1-1.5 1.5-1.5 2.5" />
+        <circle cx="8" cy="12" r=".5" fill="currentColor" />
+      </svg>
+      <span class="tip">Shortcuts ?</span>
+    </button>
+  </div>
+
+  <!-- File name + export -->
+  <div id="file-info">
+    <input type="text" id="file-name" value="Untitled canvas" spellcheck="false" />
+    <button id="export-btn">Export ↓</button>
+  </div>
+
+  <!-- Export menu -->
+  <div id="export-menu">
+    <div class="menu-item" data-export="png">
+      <span class="icon">🖼</span>
+      <div>
+        <div>PNG image</div>
+        <div class="menu-item-sub">Full quality, transparent bg</div>
+      </div>
+    </div>
+    <div class="menu-item" data-export="jpg">
+      <span class="icon">📷</span>
+      <div>
+        <div>JPEG image</div>
+        <div class="menu-item-sub">Compressed, white bg</div>
+      </div>
+    </div>
+    <div class="menu-item" data-export="svg">
+      <span class="icon">✦</span>
+      <div>
+        <div>SVG vector</div>
+        <div class="menu-item-sub">Scalable, editable</div>
+      </div>
+    </div>
+    <div class="menu-item" data-export="json">
+      <span class="icon">{ }</span>
+      <div>
+        <div>Canvas JSON</div>
+        <div class="menu-item-sub">Save &amp; restore later</div>
+      </div>
+    </div>
+    <div class="menu-item" data-export="copy">
+      <span class="icon">⎘</span>
+      <div>
+        <div>Copy to clipboard</div>
+        <div class="menu-item-sub">As PNG image</div>
+      </div>
+    </div>
+    <div class="menu-item menu-divider"></div>
+    <div class="menu-item" data-export="server-save">
+      <span class="icon">☁</span>
+      <div>
+        <div>Save to server</div>
+        <div class="menu-item-sub">PHP — store on disk</div>
+      </div>
+    </div>
+    <div class="menu-item" data-export="server-load">
+      <span class="icon">📂</span>
+      <div>
+        <div>Load from server</div>
+        <div class="menu-item-sub">PHP — restore saved canvas</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Left sidebar: colors & stroke -->
+  <div id="sidebar">
+    <span class="sidebar-label">Color</span>
+    <div class="color-swatch selected" style="background: #1a1916" data-color="#1a1916"></div>
+    <div class="color-swatch" style="background: #e24b4a" data-color="#e24b4a"></div>
+    <div class="color-swatch" style="background: #378add" data-color="#378add"></div>
+    <div class="color-swatch" style="background: #639922" data-color="#639922"></div>
+    <div class="color-swatch" style="background: #ba7517" data-color="#ba7517"></div>
+    <div class="color-swatch" style="background: #d4537e" data-color="#d4537e"></div>
+    <div class="color-swatch" style="background: #ffffff; border: 1px solid #e5e3dc" data-color="#ffffff"></div>
+    <input type="color" id="custom-color" title="Custom color" value="#7f77dd" />
+
+    <div class="divider" style="width: 28px; height: 0.5px"></div>
+
+      <span class="sidebar-label">Size</span>
+      <input
+        type="range"
+        id="stroke-slider"
+        min="1"
+        max="100"
+        value="2"
+        title="Stroke size"
+      />
+
+    <div class="divider" style="width: 28px; height: 0.5px"></div>
+
+    <span class="sidebar-label">Alpha</span>
+    <input type="range" id="opacity-slider" min="10" max="100" value="100" title="Opacity" />
+  </div>
+
+  <!-- Zoom controls -->
+  <div id="zoom-controls">
+    <button class="zoom-btn" id="zoom-out">−</button>
+    <div id="zoom-display">100%</div>
+    <button class="zoom-btn" id="zoom-in">+</button>
+    <button class="zoom-btn" id="zoom-fit" title="Fit to screen" style="
+          font-size: 12px;
+          border-left: 0.5px solid var(--border);
+          width: auto;
+          padding: 0 10px;
+          font-family: var(--font);
+        ">
+      Fit
+    </button>
+  </div>
+
+  <!-- Shortcuts panel -->
+  <div id="shortcuts-panel">
+    <div style="
+          font-size: 11px;
+          color: var(--text);
+          font-weight: 500;
+          margin-bottom: 6px;
+          font-family: var(--font);
+        ">
+      Shortcuts
+    </div>
+    <div><kbd>V</kbd> Select &nbsp; <kbd>H</kbd> Pan</div>
+    <div><kbd>P</kbd> Pen &nbsp; <kbd>E</kbd> Eraser</div>
+    <div><kbd>T</kbd> Text &nbsp; <kbd>R</kbd> Rect</div>
+    <div><kbd>O</kbd> Ellipse &nbsp; <kbd>L</kbd> Line</div>
+    <div><kbd>A</kbd> Arrow &nbsp; <kbd>M</kbd> Highlight</div>
+    <div><kbd>⌘Z</kbd> Undo &nbsp; <kbd>⌘⇧Z</kbd> Redo</div>
+    <div><kbd>⌘A</kbd> Select all</div>
+    <div><kbd>Del</kbd> Delete sel</div>
+    <div><kbd>Space</kbd> Hold to pan</div>
+    <div><kbd>Scroll</kbd> Zoom</div>
+    <div><kbd>?</kbd> Toggle this</div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"></div>
+
+    <!-- Eraser cursor overlay -->
+    <div id="eraser-cursor"></div>
+
+    <script src="js/canvas.js"></script>
+</body>
+
+</html>
