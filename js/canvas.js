@@ -525,6 +525,18 @@ textInput.addEventListener("keydown", (e) => {
 // ─────────────────────────────────────────────
 //  ZOOM
 // ─────────────────────────────────────────────
+// Excalidraw-style predefined zoom steps
+const ZOOM_STEPS = [0.1, 0.25, 0.33, 0.5, 0.67, 0.75, 1, 1.25, 1.5, 2, 3, 4, 5, 8];
+
+function zoomIn() {
+  const next = ZOOM_STEPS.find((s) => s > zoom + 0.01);
+  setZoom(next || 8);
+}
+function zoomOut() {
+  const prev = [...ZOOM_STEPS].reverse().find((s) => s < zoom - 0.01);
+  setZoom(prev || 0.1);
+}
+
 function setZoom(z, cx, cy) {
   cx = cx || window.innerWidth / 2;
   cy = cy || window.innerHeight / 2;
@@ -547,8 +559,12 @@ canvas.addEventListener(
   (e) => {
     e.preventDefault();
     if (e.ctrlKey || e.metaKey) {
-      const delta = e.deltaY > 0 ? 0.9 : 1.1;
-      setZoom(zoom * delta, e.clientX, e.clientY);
+      // Proportional zoom: small delta = small zoom, large delta = large zoom.
+      // Clamped so one wheel click can't jump more than ~15%.
+      const factor = Math.exp(
+        Math.max(-0.15, Math.min(0.15, -e.deltaY * 0.005)),
+      );
+      setZoom(zoom * factor, e.clientX, e.clientY);
     } else {
       panX -= e.deltaX;
       panY -= e.deltaY;
@@ -559,8 +575,8 @@ canvas.addEventListener(
   { passive: false },
 );
 
-document.getElementById("zoom-in").onclick = () => setZoom(zoom * 1.2);
-document.getElementById("zoom-out").onclick = () => setZoom(zoom / 1.2);
+document.getElementById("zoom-in").onclick = zoomIn;
+document.getElementById("zoom-out").onclick = zoomOut;
 document.getElementById("zoom-display").onclick = () => setZoom(1);
 document.getElementById("zoom-fit").onclick = () => {
   if (!shapes.length) {
@@ -681,6 +697,25 @@ document.addEventListener("keydown", (e) => {
     return;
   }
 
+  if ((e.metaKey || e.ctrlKey) && (e.key === "=" || e.key === "+")) {
+    e.preventDefault();
+    zoomIn();
+    return;
+  }
+  if ((e.metaKey || e.ctrlKey) && e.key === "-") {
+    e.preventDefault();
+    zoomOut();
+    return;
+  }
+  if ((e.metaKey || e.ctrlKey) && e.key === "0") {
+    e.preventDefault();
+    setZoom(1);
+    panX = 0;
+    panY = 0;
+    updateDotPattern();
+    redraw();
+    return;
+  }
   if ((e.metaKey || e.ctrlKey) && e.key === "z") {
     e.preventDefault();
     e.shiftKey ? redo() : undo();
@@ -823,7 +858,15 @@ function exportCanvas(format) {
   const fname = getFileName();
 
   if (format === "png") {
-    canvas.toBlob((blob) => {
+    // Always composite on the background colour — canvas itself is transparent
+    const tmp = document.createElement("canvas");
+    tmp.width = canvas.width;
+    tmp.height = canvas.height;
+    const tc = tmp.getContext("2d");
+    tc.fillStyle = "#f7f6f3";
+    tc.fillRect(0, 0, tmp.width, tmp.height);
+    tc.drawImage(canvas, 0, 0);
+    tmp.toBlob((blob) => {
       triggerDownload(blob, fname + ".png");
       toast("Saving PNG…");
     }, "image/png");
